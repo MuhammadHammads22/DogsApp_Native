@@ -247,3 +247,7 @@ eval "set -- $(
     )" '"$@"'
 
 exec "$JAVACMD" "$@"
+
+
+yes | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-34"
+yes | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;34.0.0"
