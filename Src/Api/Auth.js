@@ -4,13 +4,13 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 // Define a service using a base URL and expected endpoints
 export const Api = createApi({
   reducerPath: 'userAuthApi',
-  baseQuery: fetchBaseQuery({ baseUrl:'http://127.0.0.1:8000/user/' }),
+  baseQuery: fetchBaseQuery({ baseUrl:'http://10.0.2.2:8000/user/' }),
   endpoints: (builder) => ({
     login: builder.mutation({
-      query: (email,password) => ({
+      query: (body) => ({
         url: 'login/',
         method: 'POST',
-        body: {email,password},
+        body,
         headers: {
           'Content-type': 'application/json',
         }

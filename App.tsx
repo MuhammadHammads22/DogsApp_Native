@@ -6,15 +6,7 @@
  */
 
 import React, { useEffect } from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { StyleSheet,} from 'react-native';
 import SplashScreen from 'react-native-splash-screen'
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -24,18 +16,19 @@ import ForgetPassword from './Screens/ForgetPassword';
 import TermsAndConditions from './Screens/TermsAndConditions';
 import HomeGraph from './Screens/HomeGraph';
 import { Provider } from 'react-redux';
-import { store } from './Src/Api/store';
-import { ApiProvider } from '@reduxjs/toolkit/query/react';
-import { Api } from './Src/Api/Auth';
+import {  store } from './Src/store/Store';
+import SignUpForm from './Screens/Signup';
+// import { PersistGate } from 'redux-persist/integration/react';
+
 
 
 const Stack = createNativeStackNavigator();
 
 function MyStack() {
   return (
-    <Stack.Navigator  initialRouteName='Login' screenOptions={{headerShown:false}}>
+    <Stack.Navigator  initialRouteName='Signup' screenOptions={{headerShown:false}}>
       <Stack.Screen name="Login" component={Login} options={{}} />
-      <Stack.Screen name="Signup" component={Signup} options={{}} />
+      <Stack.Screen name="Signup" component={SignUpForm} options={{}} />
       <Stack.Screen name="FogetPassword" component={ForgetPassword} options={{}} />
       <Stack.Screen name="TermsAndConditions" component={TermsAndConditions} options={{}} />
       <Stack.Screen name="HomeGraph" component={HomeGraph} />
@@ -47,12 +40,14 @@ function App(){
   useEffect(()=>{
       SplashScreen.hide()
   },[])
+  // export const persistor=persistStore(store);
 return(
-  
       <NavigationContainer>
-        <ApiProvider api={Api}>
+        <Provider store={store}>
+          {/* <PersistGate loading={false} persistor={persistor}> */}
           <MyStack/>
-        </ApiProvider>
+          {/* </PersistGate> */}
+        </Provider>
       </NavigationContainer>
     
   // <Text style={{textAlign:'justify',fontSize:20,justifyContent:'center',alignContent:'center',color:'red',padding:20,backgroundColor:'orange'}}>hello world</Text>
