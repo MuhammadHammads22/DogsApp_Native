@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { setErrorEmail, setErrorPassword, setIsErrorEmail, setIsErrorPassword } from "../../Slices/LoginSlice";
+import { setErrorEmail, setErrorPassword, setIsErrorEmail, setIsErrorPassword } from "../../../Slices/LoginSlice";
 
 // const dispatch=useDispatch()
 

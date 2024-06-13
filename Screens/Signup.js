@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Linking, Modal } from 'react-native';
 import {
   View,
   Text,
@@ -6,73 +7,81 @@ import {
   Button,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  StatusBar,
 } from 'react-native';
 import { useSignUpMutation } from '../Src/Api/Auth';
 import { useDispatch, useSelector } from 'react-redux';
-import { setPassword,setConfirmPassword, setDob, setEmail, setErrorConfirmPassword, setErrorDob, setErrorEmail, setErrorFullName, setErrorGender, setErrorPassword, setErrorReligion, setErrorUserName, setFullName, setGender, setIsErrorConfirmPassword, setIsErrorDate, setIsErrorEmail, setIsErrorFullName, setIsErrorGender, setIsErrorPassword, setIsErrorReligion, setIsErrorUserName, setReligion, setUserName, setToInitialState } from '../Src/Slices/SignupSlice';
-import { validateConfirmPassword, validateDob, validateEmail, validateFullName, validateGender, validatePassword, validateReligion, validateUserName } from '../Src/utils/authValidation/SignupValidation';
-import useFieldFocus from '../Src/utils/authValidation/SignupFocusManager';
-import { SignupValidation } from '../Src/utils/authValidation/ServerResponseValidationSignup';
-const SignUpForm = () => {
+import { setPassword,setConfirmPassword, setDob, setEmail, setErrorConfirmPassword, setErrorDob, setErrorEmail, setErrorFullName, setErrorGender, setErrorPassword, setErrorReligion, setErrorUserName, setFullName, setGender, setIsErrorConfirmPassword, setIsErrorDate, setIsErrorEmail, setIsErrorFullName, setIsErrorGender, setIsErrorPassword, setIsErrorReligion, setIsErrorUserName, setReligion, setUserName, setToInitialState, setPhoneNumber } from '../Src/Slices/SignupSlice';
+import { validateConfirmPassword, validateDob, validateEmail, validateFullName, validateGender, validatePassword, validatePhoneNumber, validateReligion, validateUserName } from '../Src/utils/authValidation/signup/SignupValidation';
+import useFieldFocus from '../Src/utils/authValidation/signup/SignupFocusManager';
+import { SignupValidation } from '../Src/utils/authValidation/signup/ServerResponseValidationSignup';
+import LinearGradient from 'react-native-linear-gradient';
+import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
+const SignUpForm = ({navigation}) => {
   const signupState=useSelector((state)=>state.signup.signup);
   const email=signupState.email
+  const propPhoneNumber=signupState.propPhoneNumber
   const userName=signupState.userName
   const fullName=signupState.fullName
+  const phoneNumber=signupState.phoneNumber
   const dob =signupState.dob
   const religion=signupState.religion
   const gender=signupState.gender
   const password=signupState.password
   const confirmPassword=signupState.confirmPassword
   const dispatch=useDispatch()
-
- 
-
-
+  const buttonDisabled=false
+  // const buttonDisabled=(!email|| !userName ||!fullName ||!phoneNumber ||!dob ||!religion ||!gender || !password ||!confirmPassword||signupState.isErrorEmail || signupState.isErrorUserName  || signupState.isErrorFullName || signupState.isErrorDob || signupState.isErrorReligion || signupState.isErrorPhoneNumber || signupState.isErrorGender ||signupState.isErrorPassword ||signupState.isErrorConfirmPassword )
+  const [isErrorServer,setIsErrorServer] = useState(false)
+  const [errorServer,setErrorServer] = useState("")
+  // const openWebPage = () => {
+  //   const url = 'https://example.com'; // Replace with your desired URL
+  //   Linking.openURL(url)
+  //     .then(() => console.log('Opened web page successfully'))
+  //     .catch((err) => console.error('Error opening web page: ', err));
+  // };
 
 
   const [signup,{isSuccess,error,isLoading}]=useSignUpMutation();
   const performSignup=async()=>{
-    await signup({email:email,username:userName,full_name:fullName,religion:religion,gender:gender,date_of_birth:dob,password:password,password2:confirmPassword}).then((data)=>{
-      // console.log((data.error.data)?true:false);
-      // console.log((data.data.success)?true:false);
-      // console.log(data.error.data);
-      // console.log(data)
-      // console.log(isSuccess)
-      // console.log(error.status)
+    await signup({email:email,username:userName,full_name:fullName,phone_number:phoneNumber,religion:religion,gender:gender,date_of_birth:dob,password:password,password2:confirmPassword}).then((data)=>{
+      console.warn(data)
       if (data.data && data.data.success === "Register Successfully") {
         // Action for successful registration
+        setIsErrorServer(true)
+        setErrorServer("Registration successful!. Verify your email.")
         dispatch(setToInitialState())
-        console.log("Registration successful");
       } else{
-         console.log(data.error.data)
+
          const errors=SignupValidation(data.error.data)
          errors.error.forEach((Item,index)=>{
              switch(Item){
              case "email":
-               console.log(Item)
          dispatch(setErrorEmail("Email already exist"))
          dispatch(setIsErrorEmail(true))
                break;
              case "userName":
-               console.log(Item)
          dispatch(setErrorUserName("User name already exist"))
          dispatch(setIsErrorUserName(true))
                break;
              case "dob":
-               console.log(Item)
+               break;
+               case "phoneNumber":
                break;
              }
          })
       }
   
-      //  if(error.status===400){
+       if(error.status===400){
 
    
 
-      //  }
-      //  else{
-      //   console.log(data.data)
-      //  }
+       }
+       else{
+        console.log(data.data)
+       }
 
      
     }
@@ -91,6 +100,9 @@ const SignUpForm = () => {
   };
 
   const handleFullNameSubmit = () => {
+    focusNextField('phoneNumber');
+  };
+  const handlePhoneNumberSubmit = () => {
     focusNextField('dob');
   };
 
@@ -106,115 +118,271 @@ const SignUpForm = () => {
   };
   const handlePasswordSubmit = () => {
     focusNextField('confirmPassword');
-  };
+  }
+
 
 
 
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={(text)=>dispatch(setEmail(text))}
-        onBlur={()=>validateEmail(email,dispatch)}
-        ref={refs.email}
-        onSubmitEditing={handleEmailSubmit}
-      />
-      {signupState.isErrorEmail && <Text style={styles.errorText}>{signupState.errorEmail}</Text>}
-
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={userName}
-        onChangeText={(text)=>dispatch(setUserName(text))}
-        onBlur={()=>validateUserName(userName,dispatch)}
-        ref={refs.userName}
-        onSubmitEditing={handleUserNameSubmit}
-      />
-      {signupState.isErrorUserName && <Text style={styles.errorText}>{signupState.errorUserName}</Text>}
-
-      <TextInput
-        style={styles.input}
-        placeholder="Full Name"
-        value={fullName}
-        onChangeText={(text)=>dispatch(setFullName(text))}
-        onBlur={()=>validateFullName(fullName,dispatch)}
-        ref={refs.fullName}
-        onSubmitEditing={handleFullNameSubmit}
-      />
-      {signupState.isErrorFullName && <Text style={styles.errorText}>{signupState.errorFullName}</Text>}
 
 
-      <TextInput
-        style={styles.input}
-        placeholder="Date of Birth"
-        value={dob}
-        onChangeText={(text)=>dispatch(setDob(text))}
-        onBlur={()=>validateDob(dob,dispatch)}
-        ref={refs.dob}
-        onSubmitEditing={handleDobSubmit}
 
-      />
-      {signupState.isErrorDate && <Text style={styles.errorText}>{signupState.errorDob}</Text>}
+    <ScrollView style={{ flex: 1 ,marginTop:20}}>
+      <KeyboardAvoidingView>
+        <StatusBar
+          translucent={true}
+          barStyle={'light-content'}
+          backgroundColor={'#03bafc'}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Religion"
-        value={religion}
-        onChangeText={(text)=>dispatch(setReligion(text))}
-        onBlur={()=>validateReligion(religion,dispatch)}
-        ref={refs.religion}
-        onSubmitEditing={handleReligionSubmit}
-      />
-      {signupState.isErrorReligion && <Text style={styles.errorText}>{signupState.errorReligion}</Text>}
-
-      <TextInput
-        style={styles.input}
-        placeholder="Gender"
-        value={gender}
-        onChangeText={(text)=>dispatch(setGender(text))}
-        onBlur={()=>validateGender(gender,dispatch)}
-        ref={refs.gender}
-        onSubmitEditing={handleGenderSubmit}
-      />
-      {signupState.isErrorGender && <Text style={styles.errorText}>{signupState.errorGender}</Text>}
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry={signupState.passwordHidden}
-        value={password}
-        onChangeText={(text)=>{
-          dispatch(setPassword(text))
-          if(password.length>2) validatePassword(password,dispatch)
-            if(confirmPassword.length()>2) validateConfirmPassword(confirmPassword,password,dispatch)
-        }}
-        onBlur={()=>validatePassword(password)}
-        ref={refs.password}
-        onSubmitEditing={handlePasswordSubmit}
-
-
-      />
-      {signupState.isErrorPassword && <Text style={styles.errorText}>{signupState.errorPassword}</Text>}
-
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        secureTextEntry={signupState.confirmPasswordHidden}
-        value={confirmPassword}
-        onChangeText={(text)=>{
-          dispatch(setConfirmPassword(text))
-          validateConfirmPassword(confirmPassword,password,dispatch)
-        }}
-        onBlur={()=>validateConfirmPassword(confirmPassword,password,dispatch)}
-        ref={refs.confirmPassword}
-      />
-      {signupState.isErrorConfirmPassword && <Text style={styles.errorText}>{signupState.errorConfirmPassword}</Text>}
-
-      <Button title="SignUp" onPress={performSignup} />
+<Modal  transparent={true}
+  visible={isErrorServer }
+  onDismiss={()=>{
+    setIsErrorServer(false)
+    setErrorServer("")
+  }}
+  onRequestClose={()=>{
+    setIsErrorServer(false)
+    setErrorServer("")
+  }}  
+  >
+    <View backgroundColor={'rgba(50,50,50,.3)'} style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+      <View style={{justifyContent:'flex-start',alignItems:'center',width:responsiveWidth(85),padding:responsiveWidth(2),borderRadius:responsiveWidth(5),elevation:responsiveHeight(1),shadowColor:'gray',shadowOffset:responsiveHeight(1),shadowOpacity:responsiveHeight(1),shadowRadius:responsiveWidth(5),backgroundColor:'white'}}>
+        <Text style={{fontSize:responsiveHeight(3),fontWeight:'bold',marginTop:responsiveHeight(1)}}>Alert</Text>
+        <Text style={{alignSelf:'flex-start',fontSize:responsiveHeight(2),fontWeight:'medium',margin:responsiveWidth(2),marginTop:responsiveWidth(4)}}>{errorServer}</Text>
+        <View style={{flexDirection:'row',alignSelf:'flex-end'}}>
+        <TouchableOpacity onPress={()=>{setIsErrorServer(false)
+    setErrorServer("")}} style={{backgroundColor:'#03bafc',alignSelf:'flex-end',padding:responsiveWidth(3),margin:responsiveWidth(2),borderRadius:responsiveWidth(3)}}>
+        <Text styles={{fontSize:responsiveHeight(1.5),fontWeight:'bold',color:'#FFFFFF'}}>Dismiss</Text>
+        </TouchableOpacity>
+        {(errorServer==="Registration successful!. Verify your email.") ? 
+        <TouchableOpacity onPress={()=>{setIsErrorServer(false)
+          setErrorServer("")
+          navigation.navigate('EmailVerification')
+          }} 
+          style={{backgroundColor:'#03bafc',alignSelf:'flex-end',padding:responsiveWidth(3),margin:responsiveWidth(2),borderRadius:responsiveWidth(3)}}>
+        <Text styles={{fontSize:responsiveHeight(1.5),fontWeight:'bold',color:'#FFFFFF'}}>Verify Email</Text>
+        </TouchableOpacity>:null
+        }
+        </View>
+        
+      </View>
+  
+     
     </View>
+</Modal>
+
+        <Modal  transparent={true}
+        visible={isLoading}
+        >
+          <View backgroundColor={'rgba(50,50,50,.3)'} style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+          <ActivityIndicator style={{}} size={'medium'} color={'black'} animating={true}/>
+          </View>
+        </Modal>
+
+        
+        <LinearGradient
+          colors={['#42a1f5', '#03bafc', '#42c5f5']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            borderBottomLeftRadius: responsiveHeight(3),
+            borderBottomRightRadius: responsiveHeight(3),
+            height: responsiveHeight(30),
+            width: responsiveWidth(100),
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+          <Text style={{ color: 'white', fontSize: responsiveHeight(4), fontWeight: 'bold' }}>
+            AdaZakat
+          </Text>
+        </LinearGradient>
+        <View
+          style={{
+            elevation: 4,
+            backgroundColor: 'white',
+            borderRadius: responsiveWidth(5),
+            margin: responsiveWidth(3),
+            marginTop: responsiveHeight(-2),
+            paddingVertical: responsiveHeight(2),
+            // alignItems:'center',
+            paddingHorizontal: responsiveWidth(5),
+          }}>
+          <Text
+            style={{
+              fontSize: responsiveHeight(2.5),
+              fontWeight: 'bold',
+              color: '#03bafc',
+              textAlign: 'center'
+            }}>
+            SIGNUP
+          </Text>
+          <View style={{ marginVertical: responsiveHeight(2) }}>
+            
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput   onChangeText={(text)=>dispatch(setEmail(text))}
+                           onBlur={()=>validateEmail(email,dispatch)}
+                           ref={refs.email}
+                           onSubmitEditing={handleEmailSubmit} 
+                           value={email} 
+                           placeholder='Email' 
+                           style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: signupState.isErrorEmail ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {signupState.isErrorEmail ? (<Text style={{ color: 'red' }}>{signupState.errorEmail}</Text>) : (<Text></Text>)}
+              </View>
+            </View>
+
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput   onChangeText={(text)=>dispatch(setUserName(text))}
+                           onBlur={()=>validateUserName(userName,dispatch)}
+                           ref={refs.userName}
+                           onSubmitEditing={handleUserNameSubmit} 
+                           value={userName} 
+                           placeholder='User Name' 
+                           style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: signupState.isErrorUserName ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {signupState.isErrorUserName ? (<Text style={{ color: 'red' }}>{signupState.errorUserName}</Text>) : (<Text></Text>)}
+              </View>
+            </View>
+
+
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput   onChangeText={(text)=>dispatch(setFullName(text))}
+                           onBlur={()=>validateFullName(fullName,dispatch)}
+                           ref={refs.fullName}
+                           onSubmitEditing={handleFullNameSubmit} 
+                           value={fullName} 
+                           placeholder='Full Name' 
+                           style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: signupState.isErrorFullName ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {signupState.isErrorFullName ? (<Text style={{ color: 'red' }}>{signupState.errorFullName}</Text>) : (<Text></Text>)}
+              </View>
+            </View>
+
+
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput   onChangeText={(text)=>dispatch(setPhoneNumber(text))}
+                           onBlur={()=>validatePhoneNumber(phoneNumber,dispatch)}
+                           ref={refs.phoneNumber}
+                           onSubmitEditing={handlePhoneNumberSubmit} 
+                           value={phoneNumber} 
+                           placeholder='Phone Number' 
+                           style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: signupState.isErrorFullName ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {signupState.isErrorPhoneNumber? (<Text style={{ color: 'red' }}>{signupState.errorPhoneNumber}</Text>) : (<Text></Text>)}
+              </View>
+            </View>
+
+
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput   onChangeText={(text)=>dispatch(setDob(text))}
+                           onBlur={()=>validateDob(dob,dispatch)}
+                           ref={refs.dob}
+                           onSubmitEditing={handleDobSubmit} 
+                           value={dob} 
+                           placeholder='Birth Date' 
+                           style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: signupState.isErrorDob ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {signupState.isErrorDob ? (<Text style={{ color: 'red' }}>{signupState.errorDob}(2004-12-28)</Text>) : (<Text>(2004-12-28)</Text>)}
+              </View>
+            </View>
+
+
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput   onChangeText={(text)=>dispatch(setReligion(text))}
+                           onBlur={()=>validateReligion(religion,dispatch)}
+                           ref={refs.religion}
+                           onSubmitEditing={handleReligionSubmit} 
+                           value={religion} 
+                           placeholder='Religion' 
+                           style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: signupState.isErrorReligion ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {signupState.isErrorReligion ? (<Text style={{ color: 'red' }}>{signupState.errorReligion}</Text>) : (<Text></Text>)}
+              </View>
+            </View>
+
+
+
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput   onChangeText={(text)=>dispatch(setGender(text))}
+                           onBlur={()=>validateGender(gender,dispatch)}
+                           ref={refs.gender}
+                           onSubmitEditing={handleGenderSubmit} 
+                           value={gender} 
+                           placeholder='Gender' 
+                           style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: signupState.isErrorGender ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {signupState.isErrorGender ? (<Text style={{ color: 'red' }}>{signupState.errorGender}</Text>) : (<Text></Text>)}
+              </View>
+            </View>
+
+
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput  secureTextEntry={signupState.passwordHidden}
+               ref={refs.password}
+               onSubmitEditing={handlePasswordSubmit}
+                onBlur={() => validatePassword(password, dispatch)}
+                value={password} placeholder='password' 
+                onChangeText={(text) =>{ dispatch(setPassword(text))
+                    if(text.length>3){
+                      validatePassword(text,dispatch)
+                    }
+                    if(confirmPassword.length>1){
+                      validateConfirmPassword(confirmPassword,text,dispatch)
+                    }
+                 }}
+               style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: signupState.isErrorPassword ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {signupState.isErrorPassword ? (<Text style={{ color: 'red' }}>{signupState.errorPassword}</Text>) : (<Text></Text>)}
+              </View>
+            </View>
+
+
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput  secureTextEntry={signupState.confirmPasswordHidden}
+               ref={refs.confirmPassword}
+                onBlur={() => validateConfirmPassword(confirmPassword,password, dispatch)}
+                value={confirmPassword} placeholder='Confirm Password' 
+                onChangeText={(text) => { dispatch(setConfirmPassword(text))
+                  if(text.length>3){validateConfirmPassword(text,password,dispatch)}
+
+                }}
+               style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: signupState.isErrorConfirmPassword ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {signupState.isErrorConfirmPassword ? (<Text style={{ color: 'red' }}>{signupState.errorConfirmPassword}</Text>) : (<Text></Text>)}
+              </View>
+            </View>
+
+          
+            <View style={{ marginTop: responsiveHeight(4) }}>
+              <TouchableOpacity disabled={buttonDisabled} onPress={performSignup} >
+                <LinearGradient
+                  colors={['#42a1f5', '#03bafc', '#42c5f5']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{
+                    borderRadius: 100,
+                    width: responsiveWidth(60),
+                    alignSelf: 'center',
+                    alignItems: 'center',
+                    paddingVertical: responsiveHeight(1),
+                    opacity:buttonDisabled?.5:1.0
+                  }}>
+                  <Text style={{ color: 'white', fontSize: 19 }}>SIGNUP</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+            <View style={{ marginTop: responsiveHeight(3) }}>
+              <Text style={{ color: 'black', fontSize: responsiveHeight(2), textAlign: 'center' }}>
+                Already have an account?{' '}
+                <Text style={{color:'#03bafc'}} onPress={() => navigation.popToTop()}>Login</Text>
+              </Text>
+            </View>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 };
 

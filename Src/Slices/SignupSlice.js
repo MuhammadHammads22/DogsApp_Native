@@ -12,10 +12,14 @@ isErrorUserName: null,
 fullName: "",
 errorFullName: "",
 isErrorFullName: null,
+phoneNumber:"",
+errorPhoneNumber:"",
+isErrorPhoneNumber:null,
+propPhoneNumber:'',
 //   datePickerDialog: false,
 dob: "",
 errorDob: "",
-isErrorDate: null,
+isErrorDob: null,
 religion: "",
 errorReligion: "",
 isErrorReligion: null,
@@ -49,10 +53,14 @@ const signupSlice = createSlice({
         fullName: "",
         errorFullName: "",
         isErrorFullName: null,
+        phoneNumber:"",
+        errorPhoneNumber:"",
+        isErrorPhoneNumber:null,
+        propPhoneNumber:state.signup.propPhoneNumber,
       //   datePickerDialog: false,
         dob: "",
         errorDob: "",
-        isErrorDate: null,
+        isErrorDob: null,
         religion: "",
         errorReligion: "",
         isErrorReligion: null,
@@ -77,6 +85,16 @@ const signupSlice = createSlice({
     },
     setIsErrorEmail(state, action) {
       state.signup.isErrorEmail = action.payload;
+    },
+    setPhoneNumber(state, action) {
+      state.signup.phoneNumber = action.payload;
+      state.signup.propPhoneNumber=action.payload
+    },
+    setErrorPhoneNumber(state, action) {
+      state.signup.errorPhoneNumber = action.payload;
+    },
+    setIsErrorPhoneNumber(state, action) {
+      state.signup.isErrorPhoneNumber = action.payload;
     },
     setUserName(state, action) {
       state.signup.userName = action.payload;
@@ -105,8 +123,8 @@ const signupSlice = createSlice({
     setErrorDob(state, action) {
       state.signup.errorDob = action.payload;
     },
-    setIsErrorDate(state, action) {
-      state.signup.isErrorDate = action.payload;
+    setIsErrorDob(state, action) {
+      state.signup.isErrorDob = action.payload;
     },
     setReligion(state, action) {
       state.signup.religion = action.payload;
@@ -167,10 +185,13 @@ export const {
   setFullName,
   setErrorFullName,
   setIsErrorFullName,
+  setPhoneNumber,
+  setErrorPhoneNumber,
+  setIsErrorPhoneNumber,
 //   setDatePickerDialog,
   setDob,
   setErrorDob,
-  setIsErrorDate,
+  setIsErrorDob,
   setReligion,
   setErrorReligion,
   setIsErrorReligion,

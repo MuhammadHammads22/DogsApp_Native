@@ -18,6 +18,7 @@ import HomeGraph from './Screens/HomeGraph';
 import { Provider } from 'react-redux';
 import {  store } from './Src/store/Store';
 import SignUpForm from './Screens/Signup';
+import EmailVerification from './Screens/EmailVerificationScreen';
 // import { PersistGate } from 'redux-persist/integration/react';
 
 
@@ -26,10 +27,11 @@ const Stack = createNativeStackNavigator();
 
 function MyStack() {
   return (
-    <Stack.Navigator  initialRouteName='Signup' screenOptions={{headerShown:false}}>
+    <Stack.Navigator  initialRouteName={'Login'} screenOptions={{headerShown:false}}>
+      <Stack.Screen name="EmailVerification" component={EmailVerification} options={{}} />
+      <Stack.Screen name="ForgetPasswordScreen" component={ForgetPassword} options={{}} />
       <Stack.Screen name="Login" component={Login} options={{}} />
       <Stack.Screen name="Signup" component={SignUpForm} options={{}} />
-      <Stack.Screen name="FogetPassword" component={ForgetPassword} options={{}} />
       <Stack.Screen name="TermsAndConditions" component={TermsAndConditions} options={{}} />
       <Stack.Screen name="HomeGraph" component={HomeGraph} />
     </Stack.Navigator>
@@ -38,6 +40,7 @@ function MyStack() {
 
 function App(){
   useEffect(()=>{
+
       SplashScreen.hide()
   },[])
   // export const persistor=persistStore(store);

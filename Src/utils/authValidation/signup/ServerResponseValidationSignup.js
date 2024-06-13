@@ -19,6 +19,11 @@ export const SignupValidation=(response)=>{
         error.error.push("dob")
   
     }
+    if (errors.phone_number) {
+
+      error.error.push("phoneNumber")
+
+  }
   } else {
 
     console.log('No errors in response or invalid response format');

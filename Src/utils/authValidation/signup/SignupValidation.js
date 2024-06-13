@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { setErrorConfirmPassword, setErrorDob, setErrorEmail, setErrorFullName, setErrorGender, setErrorPassword, setErrorReligion, setErrorUserName, setIsErrorConfirmPassword, setIsErrorDate, setIsErrorEmail, setIsErrorFullName, setIsErrorGender, setIsErrorPassword, setIsErrorReligion, setIsErrorUserName } from "../../Slices/SignupSlice";
+import { setErrorConfirmPassword, setErrorDob, setErrorEmail, setErrorFullName, setErrorGender, setErrorPassword, setErrorPhoneNumber, setErrorReligion, setErrorUserName, setIsErrorConfirmPassword, setIsErrorDate, setIsErrorDob, setIsErrorEmail, setIsErrorFullName, setIsErrorGender, setIsErrorPassword, setIsErrorPhoneNumber, setIsErrorReligion, setIsErrorUserName } from "../../../Slices/SignupSlice";
 
 
 export const validateEmail=(email,dispatch)=>{
@@ -44,15 +44,20 @@ export const validateFullName=(fullName,dispatch)=>{
     }
     
     
-    // Date of Birth validation
+    // Date of Birth validation 
 export const validateDob=(dob,dispatch)=>{
-        if (!dob) {
+          const dobRegex = /^\d{4}-\d{2}-\d{2}$/;
+          if (!dob) {
           dispatch(setErrorDob('Date of Birth is required')) ;
-          dispatch(setIsErrorDate(true));
+          dispatch(setIsErrorDob(true));
+        }
+        else if(!dobRegex.test(dob)){
+          dispatch(setIsErrorDob(true));
+          dispatch(setErrorDob("*invalid date format"));
         }
         else{
           dispatch(setErrorDob(''));
-          dispatch(setIsErrorDate(false));
+          dispatch(setIsErrorDob(false));
       }
     }
     // Religion validation
@@ -65,6 +70,25 @@ export const validateReligion=(religion,dispatch)=>{
           dispatch(setErrorReligion(''));
           dispatch(setIsErrorReligion(false));
         }
+      }
+      // Phone Number validation
+      export function validatePhoneNumber(phoneNumber,dispatch) {
+        // Define the regular expression pattern
+        const phonePattern = /^(03|92)\d{9}$/;
+      
+        // Test the phone number against the pattern
+        if (!phoneNumber) {
+          dispatch(setErrorPhoneNumber('Phone number is required')) ;
+          dispatch(setIsErrorPhoneNumber(true));
+        }
+        else if(!phonePattern.test(phoneNumber)){
+          dispatch(setErrorPhoneNumber('*invalid phone number format')) ;
+          dispatch(setIsErrorPhoneNumber(true));
+        }
+        else{
+          dispatch(setErrorPhoneNumber('')) ;
+          dispatch(setIsErrorPhoneNumber(false));
+      }
       }
     // Gender validation
 export const validateGender=(gender,dispatch)=>{

@@ -1,68 +1,239 @@
-import { View, Text, Button, TextInput, StyleSheet } from 'react-native'
-import React, { useEffect, useRef } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, ScrollView, StatusBar, ActivityIndicator, Modal } from 'react-native'
+import React, {  useRef, useState} from 'react'
 import { useLoginMutation } from '../Src/Api/Auth'
-import { setTokenAndName } from '../Src/Slices/AuthPersistSlice'
 import { useDispatch, useSelector } from 'react-redux'
-import { persistor } from '../Src/store/Store'
-import { Image, Svg } from 'react-native-svg'
-import { setEmail, setErrorEmail, setErrorPassword, setIsErrorEmail, setIsErrorPassword, setPassword } from '../Src/Slices/LoginSlice'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { state } from '../Src/Slices/LoginSlice'
-import { validateEmail, validatePassword } from '../Src/utils/authValidation/LoginValidation'
+import { setEmail, setErrorEmail, setIsErrorEmail, setPassword } from '../Src/Slices/LoginSlice'
+import { validateEmail, validatePassword } from '../Src/utils/authValidation/login/LoginValidation'
+import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions'
+import LinearGradient from 'react-native-linear-gradient'
+import { TouchableOpacity } from 'react-native'
+import { server } from '../metro.config'
+import { CommonActions } from '@react-navigation/native'
+import { colors } from '../Src/Constants/Theme'
+import { setAccessToken, setRefreshToken } from '../Src/store/localStore'
 
-const Login = ({navigation}) => {
+const Login = ({ navigation }) => {
 
-const loginState=useSelector((state)=>state.login.login);
-const email=loginState.email
-const password=loginState.password
-const dispatch=useDispatch()
-
-
-
-
-const emailRef = useRef(null);
-const passwordRef = useRef(null);
-
-
-const focusNextField = (nextFieldRef) => {
-  if (nextFieldRef.current) {
-    nextFieldRef.current.focus();
-  }
-};
-
-const handleEmailSubmit = () => {
-  focusNextField(passwordRef);
-};
+  const loginState = useSelector((state) => state.login.login);
+  const email = loginState.email
+  const password = loginState.password
+  const dispatch = useDispatch()
+  const buttonDisabled=(!email||!password||loginState.isErrorEmail || loginState.isErrorPassword )
+  const [isErrorServer,setIsErrorServer] = useState(false)
+  const [errorServer,setErrorServer] = useState("")
 
 
-// api
-  const [login,{data,isError,error}]=useLoginMutation();
-  const loginfunc=async()=>{
-    const res= await login({email:loginState.email,password:loginState.password}).unwrap();
-    if (res.error) {
-      console.warn("400")
-      console.warn(res.error);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+
+  const focusNextField = (nextFieldRef) => {
+    if (nextFieldRef.current) {
+      nextFieldRef.current.focus();
     }
-    if (res.data) {
-      console.warn("success")
-      console.warn(res.data.token);
+  };
+
+  const handleEmailSubmit = () => {
+    focusNextField(passwordRef);
+  };
+
+
+  // api
+  const [login, { data, isLoading, error }] = useLoginMutation();
+  const loginfunc = async () => {
+    await login({ email: loginState.email, password: loginState.password }).then(data => {
+      // console.log(data)
+      if (data?.error) {
+        if(data.error.data){
+          const { errors } = data.error.data
+          // console.log(errors.non_field_errors)
+          if (errors.non_field_errors[0] === "You are not Register User") {
+            console.log("register before login")
+            setIsErrorServer(true)
+            setErrorServer("This email is not registered. Register first")
+            // setServerResponse(state=>{return{...state,error:"This email is not registered. Register first",isError:true}})
+          }
+          if (errors.non_field_errors[0] === "Verify your email") {
+            console.log("verify email plz..")
+            setIsErrorServer(true)
+            setErrorServer("This email is unverified. Verify email before Loging In.")
+         }
+        }
+       
+      } else{
+        const { data: { token: { access, refresh } } } = data;
+        
+        // Console log the destructured values
+        console.log('Access Token:', access);
+        console.log('Refresh Token:', refresh);
+  
+        // Validate the tokens in a conditional statement
+        if (access && refresh) {
+          setAccessToken(access)
+          setRefreshToken(refresh)
+          console.warn("Login Successfull")
+          // navigation.navigate('HomeGraph')
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'HomeGraph' }],
+            })
+          );
+          // console.log('Both access and refresh tokens are available.');
+        } else {
+          console.log('One or both tokens are missing.');
+        }
+
+      }
     }
+    ).catch((error)=>{console.log(error)});
+
   }
   return (
-    <SafeAreaView>
-    <View style={{alignContent:'center',marginHorizontal:10}}>
-      <TextInput ref={emailRef} onSubmitEditing={handleEmailSubmit} onBlur={()=>validateEmail(email,dispatch)} value={email} onChangeText={(text)=>dispatch(setEmail(text))} placeholder='email' style={{borderColor:loginState.isErrorEmail?'red':'black',borderWidth:2}} />
-      <View style={{height:30,padding:5}}>
-        { loginState.isErrorEmail? (<Text style={{color:'red'}}>{loginState.errorEmail}</Text>):(<Text></Text>)} 
+
+  
+
+
+    <ScrollView style={{ flex: 1 ,marginTop:20}}>
+      <KeyboardAvoidingView>
+        <StatusBar
+          translucent={true}
+          barStyle={'light-content'}
+          backgroundColor={'#03bafc'}
+        />
+
+
+<Modal  transparent={true}
+  visible={isErrorServer }
+  onDismiss={()=>{
+    setIsErrorServer(false)
+    setErrorServer("")
+  }}
+  onRequestClose={()=>{
+    setIsErrorServer(false)
+    setErrorServer("")
+  }}  
+  >
+    <View backgroundColor={'rgba(50,50,50,.3)'} style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+      <View style={{justifyContent:'flex-start',alignItems:'center',width:responsiveWidth(85),padding:responsiveWidth(2),borderRadius:responsiveWidth(5),elevation:responsiveHeight(1),shadowColor:'gray',shadowOffset:responsiveHeight(1),shadowOpacity:responsiveHeight(1),shadowRadius:responsiveWidth(5),backgroundColor:'white'}}>
+        <Text style={{fontSize:responsiveHeight(3),fontWeight:'bold',marginTop:responsiveHeight(1)}}>Alert</Text>
+        <Text style={{alignSelf:'flex-start',fontSize:responsiveHeight(2),fontWeight:'medium',margin:responsiveWidth(2),marginTop:responsiveWidth(4)}}>{errorServer}</Text>
+        <TouchableOpacity onPress={()=>{setIsErrorServer(false)
+    setErrorServer("")}} style={{backgroundColor:'#03bafc',alignSelf:'flex-end',padding:responsiveWidth(3),margin:responsiveWidth(2),borderRadius:responsiveWidth(3)}}>
+        <Text styles={{fontSize:responsiveHeight(1.5),fontWeight:'bold',color:'#FFFFFF'}}>Dismiss</Text>
+        </TouchableOpacity>
       </View>
-      <TextInput ref={passwordRef} onBlur={()=>validatePassword(password,dispatch)} value={password} placeholder='password'  onChangeText={(text)=>dispatch(setPassword(text))} style={{borderColor:'black',borderWidth:2}} />
-      <View style={{height:30,padding:5}}>
-        { loginState.isErrorPassword? (<Text style={{color:'red'}}>{loginState.errorPassword}</Text>):(<Text></Text>)} 
-      </View>
-     <Button disabled={ loginState.isErrorEmail || loginState.isErrorPassword } title="login" onPress={ ()=>  loginfunc() }/>
+  
+     
     </View>
-    </SafeAreaView>
+</Modal>
+      
+        <Modal  transparent={true}
+        visible={isLoading}
+        >
+
+
+
+
+
+
+
+          <View backgroundColor={'rgba(50,50,50,.3)'} style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+          <ActivityIndicator style={{}} size={'medium'} color={'black'} animating={true}/>
+          </View>
+        </Modal>
+
+       
+
+
+        <LinearGradient
+          colors={['#42a1f5', '#03bafc', '#42c5f5']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            borderBottomLeftRadius: responsiveHeight(3),
+            borderBottomRightRadius: responsiveHeight(3),
+            height: responsiveHeight(30),
+            width: responsiveWidth(100),
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+          <Text style={{ color: 'white', fontSize: responsiveHeight(4), fontWeight: 'bold' }}>
+            AdaZakat
+          </Text>
+        </LinearGradient>
+        <View
+          style={{
+            elevation: 4,
+            backgroundColor: 'white',
+            borderRadius: responsiveWidth(5),
+            margin: responsiveWidth(3),
+            marginTop: responsiveHeight(-2),
+            paddingVertical: responsiveHeight(2),
+            // alignItems:'center',
+            paddingHorizontal: responsiveWidth(5),
+          }}>
+          <Text
+            style={{
+              fontSize: responsiveHeight(2.5),
+              fontWeight: 'bold',
+              color: '#03bafc',
+              textAlign: 'center'
+            }}>
+            LOGIN
+          </Text>
+          <View style={{ marginVertical: responsiveHeight(2) }}>
+            
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput ref={emailRef} onSubmitEditing={handleEmailSubmit} onBlur={() => validateEmail(email, dispatch)} value={email} onChangeText={(text) => dispatch(setEmail(text))} placeholder='Email' style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: loginState.isErrorEmail ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {loginState.isErrorEmail ? (<Text style={{ color: 'red' }}>{loginState.errorEmail}</Text>) : (<Text></Text>)}
+              </View>
+            </View>
+
+            <View style={{ marginTop: responsiveHeight(1) }}>
+              <TextInput  secureTextEntry={loginState.passwordHidden} ref={passwordRef} value={password} placeholder='password' onChangeText={(text) => dispatch(setPassword(text))} style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: loginState.isErrorPassword ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
+                {loginState.isErrorPassword ? (<Text style={{ color: 'red' }}>{loginState.errorPassword}</Text>) : (<Text></Text>)}
+              </View>
+            </View>
+
+            <View style={{ marginTop: responsiveHeight(-2) }}>
+              <Text onPress={()=>navigation.navigate('ForgetPasswordScreen')} style={{ color: '#03bafc', fontSize: responsiveHeight(2), textAlign: 'right' }}>
+                Forgot Password?
+              </Text>
+            </View>
+            <View style={{ marginTop: responsiveHeight(4) }}>
+              <TouchableOpacity onPress={loginfunc} disabled={buttonDisabled} >
+                <LinearGradient
+                  onPress={() => {null }}
+                  colors={['#42a1f5', '#03bafc', '#42c5f5']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{
+                    borderRadius: 100,
+                    width: responsiveWidth(60),
+                    alignSelf: 'center',
+                    alignItems: 'center',
+                    paddingVertical: responsiveHeight(1),
+                    opacity:buttonDisabled?.5:1.0
+                  }}>
+                  <Text style={{ color: 'white', fontSize: 19 }}>LOGIN</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+            <View style={{ marginTop: responsiveHeight(3) }}>
+              <Text style={{ color: 'black', fontSize: responsiveHeight(2), textAlign: 'center' }}>
+                Dont't have an account?{' '}
+                <Text style={{color: '#03bafc'}}onPress={() => navigation.navigate('Signup')}>Signup</Text>
+              </Text>
+            </View>
+            {/* <Text style={{color:'red'}}>{serverResponse}</Text> */}
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </ScrollView>
+
+
   )
 }
 
@@ -77,53 +248,58 @@ const styles = StyleSheet.create({
 
 export default Login
 
-// // validation func
-// const validateEmail = () => {
-//   // Simple email validation regex pattern
-//   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//   if(!email.trim()){
-//     dispatch(setIsErrorEmail(true));
-//     dispatch(setErrorEmail("*email required"));
-//   }
-//   else if(!emailRegex.test(email)){
-//     dispatch(setIsErrorEmail(true));
-//     dispatch(setErrorEmail("*invalid email"));
-//   }
-//   else{
-//     dispatch(setIsErrorEmail(false));
-//     dispatch(setErrorEmail(""));
-//   }
-// };
-
-// const validatePassword = () => {
-//   // Simple email validation regex pattern
-//   if(!password){
-//     dispatch(setIsErrorPassword(true));
-//     dispatch(setErrorPassword("*password required"));
-//   }
-//   else if(password.length<8){
-//     dispatch(setIsErrorPassword(true));
-//     dispatch(setErrorPassword("*short password"));
-//   }
-//   else if(!/[A-Z]/.test(password) && !/[!@#$%^&*(),.?":{}|<>]/.test(password)){
-//     dispatch(setIsErrorPassword(true));
-//     dispatch(setErrorPassword("*uppercase and special character missing"));
-//   } 
-//   else if(!/[A-Z]/.test(password)){
-//     dispatch(setIsErrorPassword(true));
-//     dispatch(setErrorPassword("*uppercase letter missing"));
-//   } 
-//   else if(!/[!@#$%^&*(),.?":{}|<>]/.test(password)){
-//     dispatch(setIsErrorPassword(true));
-//     dispatch(setErrorPassword("*special character"));
-//   }
-
-//   else{
-//     dispatch(setIsErrorPassword(false));
-//     dispatch(setErrorPassword(""));
-//   }
-// };
 
 
 
-// validation func
+
+
+
+{/* <Image
+source={require("..\\Src\\Assets\\AuthLogo.png")}
+resizeMode="cover"
+style={{
+  marginTop: responsiveWidth(15),
+  // top:responsiveWidth(20),
+  borderRadius: responsiveHeight(100),
+  marginBottom: responsiveWidth(15),
+  width: responsiveWidth(40),
+  height: responsiveWidth(40),
+  alignSelf: 'center',
+}}
+/> */}
+
+// <View style={{alignContent:'center',marginHorizontal:10}}>
+// <TextInput ref={emailRef} onSubmitEditing={handleEmailSubmit} onBlur={()=>validateEmail(email,dispatch)} value={email} onChangeText={(text)=>dispatch(setEmail(text))} placeholder='email' style={{borderColor:loginState.isErrorEmail?'red':'black',borderWidth:2}} />
+// <View style={{height:30,padding:5}}>
+//   { loginState.isErrorEmail? (<Text style={{color:'red'}}>{loginState.errorEmail}</Text>):(<Text></Text>)}
+// </View>
+// <TextInput ref={passwordRef} onBlur={()=>validatePassword(password,dispatch)} value={password} placeholder='password'  onChangeText={(text)=>dispatch(setPassword(text))} style={{borderColor:'black',borderWidth:2}} />
+// <View style={{height:30,padding:5}}>
+//   { loginState.isErrorPassword? (<Text style={{color:'red'}}>{loginState.errorPassword}</Text>):(<Text></Text>)}
+// </View>
+// <Button disabled={ loginState.isErrorEmail || loginState.isErrorPassword } title="login" onPress={ ()=>  loginfunc() }/>
+// </View>
+
+
+
+
+// <LinearGradient
+// onPress={() => {}}
+// colors={['#42a1f5', '#03bafc', '#42c5f5']}
+// start={{x: 0, y: 0}}
+// end={{x: 1, y: 0}}
+// style={{
+//   borderRadius: 100,
+//   width: 150,
+//   alignSelf: 'center',
+//   alignItems: 'center',
+//   paddingVertical: 5,
+//   marginTop: 100,
+//   marginBottom: 10,
+// }}>
+// <Text style={{color: 'white', fontSize: 19}}>LOGIN</Text>
+// </LinearGradient>
+// <Text style={{color: '#03bafc', fontSize: 16, textAlign: 'center'}}>
+// Dont't have an account?{' '}
+// <Text onPress={() => navigation.navigate('Signup')}>Signup</Text>
+// </Text>

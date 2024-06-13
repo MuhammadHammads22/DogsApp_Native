@@ -5,6 +5,7 @@ const useFieldFocus = () => {
     email: useRef(null),
     userName:useRef(null),
     fullName: useRef(null),
+    phoneNumber:useRef(null),
     password: useRef(null),
     confirmPassword: useRef(null),
     religion: useRef(null),
