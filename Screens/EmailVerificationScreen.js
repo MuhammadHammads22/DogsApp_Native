@@ -11,52 +11,28 @@ const EmailVerification = ({navigation,route}) => {
   const [verifyPhoneNumber, { data, isLoading, error }] = useVerifyPhoneNumberMutation();
   const signupState=useSelector((state)=>state.signup.signup);
   const pno=signupState.propPhoneNumber
- 
+  const [isErrorServer, setIsErrorServer] = useState(false)
+  const [errorServer, setErrorServer] = useState("")
 
  
   const verifyCode=async (code)=>{
 
    await verifyPhoneNumber({"phone_number":pno,"code":code}).then(data=>{
+    console.log(data)
     if (data?.error) {
       if(data.error.data){
         const { error } = data.error.data
         // console.log(errors.non_field_errors)
         if (error === "Phone Number verification token does not exist.") {
           setIsErrorServer(true)
-          setErrorServer("This email is not registered. Register first")
+          setErrorServer("Invalid token. Plz enter correct token")
           // setServerResponse(state=>{return{...state,error:"This email is not registered. Register first",isError:true}})
         }
-        if (errors.non_field_errors[0] === "Verify your email") {
-          console.log("verify email plz..")
-          setIsErrorServer(true)
-          setErrorServer("This email is unverified. Verify email before Loging In.")
-       }
-      }
-     
-    } else{
-      const { data: { token: { access, refresh } } } = data;
-      
-      // Console log the destructured values
-      console.log('Access Token:', access);
-      console.log('Refresh Token:', refresh);
-
-      // Validate the tokens in a conditional statement
-      if (access && refresh) {
-        setAccessToken(access)
-        setRefreshToken(refresh)
-        console.warn("Login Successfull")
-        // navigation.navigate('HomeGraph')
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'HomeGraph' }],
-          })
-        );
-        // console.log('Both access and refresh tokens are available.');
-      } else {
-        console.log('One or both tokens are missing.');
-      }
-
+      }   
+    }
+    else{
+      setIsErrorServer(true)
+          setErrorServer("Email verified")
     }
   }
   ).catch((error)=>{console.log(error)});
@@ -83,7 +59,46 @@ const EmailVerification = ({navigation,route}) => {
         barStyle={'light-content'}
         backgroundColor={'#03bafc'}
       />
+ <Modal transparent={true}
+          visible={isErrorServer}
+          onDismiss={() => {
+            setIsErrorServer(false)
+            setErrorServer("")
+          }}
+          onRequestClose={() => {
+            setIsErrorServer(false)
+            setErrorServer("")
+          }}
+        >
+          <View backgroundColor={'rgba(50,50,50,.3)'} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ justifyContent: 'flex-start', alignItems: 'center', width: responsiveWidth(85), padding: responsiveWidth(2), borderRadius: responsiveWidth(5), elevation: responsiveHeight(1), shadowColor: 'gray', shadowOffset: responsiveHeight(1), shadowOpacity: responsiveHeight(1), shadowRadius: responsiveWidth(5), backgroundColor: 'white' }}>
+              <Text style={{ fontSize: responsiveHeight(3), fontWeight: 'bold', marginTop: responsiveHeight(1) }}>Alert</Text>
+              <Text style={{ alignSelf: 'flex-start', fontSize: responsiveHeight(2), fontWeight: 'medium', margin: responsiveWidth(2), marginTop: responsiveWidth(4) }}>{errorServer}</Text>
+              <View style={{ flexDirection: 'row', alignSelf:'flex-end',alignItems: 'flex-end' }}>
+                <TouchableOpacity onPress={() => {
+                  setIsErrorServer(false)
+                  setErrorServer("")
+                }} style={{ backgroundColor: '#03bafc', alignSelf: 'flex-end', padding: responsiveWidth(3), margin: responsiveWidth(2), borderRadius: responsiveWidth(3) }}>
+                  <Text styles={{ fontSize: responsiveHeight(1.5), fontWeight: 'bold', color: '#FFFFFF' }}>Dismiss</Text>
+                </TouchableOpacity>
+                {
+                  (errorServer === "Email verified") ?
+                    <TouchableOpacity onPress={() => {
+                      setIsErrorServer(false)
+                      setErrorServer("")
+                      navigation.navigate('Login')
+                    }} style={{ backgroundColor: '#03bafc', alignSelf: 'flex-end', padding: responsiveWidth(3), margin: responsiveWidth(2), borderRadius: responsiveWidth(3) }}>
+                      <Text styles={{ fontSize: responsiveHeight(1.5), fontWeight: 'bold', color: '#FFFFFF' }}>Login Now</Text>
+                    </TouchableOpacity>
+                        : null
+                   
+            }
+              </View>
+            </View>
 
+
+          </View>
+        </Modal>
         <Modal  transparent={true}
         visible={isLoading}
         >

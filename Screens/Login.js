@@ -1,8 +1,8 @@
 import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, ScrollView, StatusBar, ActivityIndicator, Modal } from 'react-native'
-import React, {  useRef, useState} from 'react'
+import React, { useRef, useState } from 'react'
 import { useLoginMutation } from '../Src/Api/Auth'
 import { useDispatch, useSelector } from 'react-redux'
-import { setEmail, setErrorEmail, setIsErrorEmail, setPassword } from '../Src/Slices/LoginSlice'
+import { setEmail, setErrorEmail, setIsErrorEmail, setLoginToInitialState, setPassword } from '../Src/Slices/LoginSlice'
 import { validateEmail, validatePassword } from '../Src/utils/authValidation/login/LoginValidation'
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions'
 import LinearGradient from 'react-native-linear-gradient'
@@ -11,6 +11,7 @@ import { server } from '../metro.config'
 import { CommonActions } from '@react-navigation/native'
 import { colors } from '../Src/Constants/Theme'
 import { setAccessToken, setRefreshToken } from '../Src/store/localStore'
+import { setToInitialState } from '../Src/Slices/SignupSlice'
 
 const Login = ({ navigation }) => {
 
@@ -18,9 +19,9 @@ const Login = ({ navigation }) => {
   const email = loginState.email
   const password = loginState.password
   const dispatch = useDispatch()
-  const buttonDisabled=(!email||!password||loginState.isErrorEmail || loginState.isErrorPassword )
-  const [isErrorServer,setIsErrorServer] = useState(false)
-  const [errorServer,setErrorServer] = useState("")
+  const buttonDisabled = (!email || !password || loginState.isErrorEmail || loginState.isErrorPassword)
+  const [isErrorServer, setIsErrorServer] = useState(false)
+  const [errorServer, setErrorServer] = useState("")
 
 
   const emailRef = useRef(null);
@@ -41,31 +42,31 @@ const Login = ({ navigation }) => {
   const [login, { data, isLoading, error }] = useLoginMutation();
   const loginfunc = async () => {
     await login({ email: loginState.email, password: loginState.password }).then(data => {
-      // console.log(data)
+      console.log(data)
       if (data?.error) {
-        if(data.error.data){
+        if (data.error.data) {
           const { errors } = data.error.data
-          // console.log(errors.non_field_errors)
+          console.log(errors.non_field_errors)
           if (errors.non_field_errors[0] === "You are not Register User") {
             console.log("register before login")
             setIsErrorServer(true)
-            setErrorServer("This email is not registered. Register first")
+            setErrorServer("Wrong Email & Password.")
             // setServerResponse(state=>{return{...state,error:"This email is not registered. Register first",isError:true}})
           }
-          if (errors.non_field_errors[0] === "Verify your email") {
+          if (errors.non_field_errors[0] === "User is not verified. Please check your email for verification link/code.") {
             console.log("verify email plz..")
             setIsErrorServer(true)
-            setErrorServer("This email is unverified. Verify email before Loging In.")
-         }
+            setErrorServer("Verify email before Loging In.")
+          }
         }
-       
-      } else{
+
+      } else {
         const { data: { token: { access, refresh } } } = data;
-        
+
         // Console log the destructured values
         console.log('Access Token:', access);
         console.log('Refresh Token:', refresh);
-  
+
         // Validate the tokens in a conditional statement
         if (access && refresh) {
           setAccessToken(access)
@@ -78,6 +79,7 @@ const Login = ({ navigation }) => {
               routes: [{ name: 'HomeGraph' }],
             })
           );
+          dispatch(setLoginToInitialState())
           // console.log('Both access and refresh tokens are available.');
         } else {
           console.log('One or both tokens are missing.');
@@ -85,15 +87,15 @@ const Login = ({ navigation }) => {
 
       }
     }
-    ).catch((error)=>{console.log(error)});
+    ).catch((error) => { console.log(error) });
 
   }
   return (
 
-  
 
 
-    <ScrollView style={{ flex: 1 ,marginTop:20}}>
+
+    <ScrollView style={{ flex: 1, marginTop: 20 }}>
       <KeyboardAvoidingView>
         <StatusBar
           translucent={true}
@@ -102,33 +104,57 @@ const Login = ({ navigation }) => {
         />
 
 
-<Modal  transparent={true}
-  visible={isErrorServer }
-  onDismiss={()=>{
-    setIsErrorServer(false)
-    setErrorServer("")
-  }}
-  onRequestClose={()=>{
-    setIsErrorServer(false)
-    setErrorServer("")
-  }}  
-  >
-    <View backgroundColor={'rgba(50,50,50,.3)'} style={{flex:1,alignItems:'center',justifyContent:'center'}}>
-      <View style={{justifyContent:'flex-start',alignItems:'center',width:responsiveWidth(85),padding:responsiveWidth(2),borderRadius:responsiveWidth(5),elevation:responsiveHeight(1),shadowColor:'gray',shadowOffset:responsiveHeight(1),shadowOpacity:responsiveHeight(1),shadowRadius:responsiveWidth(5),backgroundColor:'white'}}>
-        <Text style={{fontSize:responsiveHeight(3),fontWeight:'bold',marginTop:responsiveHeight(1)}}>Alert</Text>
-        <Text style={{alignSelf:'flex-start',fontSize:responsiveHeight(2),fontWeight:'medium',margin:responsiveWidth(2),marginTop:responsiveWidth(4)}}>{errorServer}</Text>
-        <TouchableOpacity onPress={()=>{setIsErrorServer(false)
-    setErrorServer("")}} style={{backgroundColor:'#03bafc',alignSelf:'flex-end',padding:responsiveWidth(3),margin:responsiveWidth(2),borderRadius:responsiveWidth(3)}}>
-        <Text styles={{fontSize:responsiveHeight(1.5),fontWeight:'bold',color:'#FFFFFF'}}>Dismiss</Text>
-        </TouchableOpacity>
-      </View>
-  
-     
-    </View>
-</Modal>
-      
-        <Modal  transparent={true}
-        visible={isLoading}
+        <Modal transparent={true}
+          visible={isErrorServer}
+          onDismiss={() => {
+            setIsErrorServer(false)
+            setErrorServer("")
+          }}
+          onRequestClose={() => {
+            setIsErrorServer(false)
+            setErrorServer("")
+          }}
+        >
+          <View backgroundColor={'rgba(50,50,50,.3)'} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ justifyContent: 'flex-start', alignItems: 'center', width: responsiveWidth(85), padding: responsiveWidth(2), borderRadius: responsiveWidth(5), elevation: responsiveHeight(1), shadowColor: 'gray', shadowOffset: responsiveHeight(1), shadowOpacity: responsiveHeight(1), shadowRadius: responsiveWidth(5), backgroundColor: 'white' }}>
+              <Text style={{ fontSize: responsiveHeight(3), fontWeight: 'bold', marginTop: responsiveHeight(1) }}>Alert</Text>
+              <Text style={{ alignSelf: 'flex-start', fontSize: responsiveHeight(2), fontWeight: 'medium', margin: responsiveWidth(2), marginTop: responsiveWidth(4) }}>{errorServer}</Text>
+              <View style={{ flexDirection: 'row', alignContent: 'flex-end' }}>
+                <TouchableOpacity onPress={() => {
+                  setIsErrorServer(false)
+                  setErrorServer("")
+                }} style={{ backgroundColor: '#03bafc', alignSelf: 'flex-end', padding: responsiveWidth(3), margin: responsiveWidth(2), borderRadius: responsiveWidth(3) }}>
+                  <Text styles={{ fontSize: responsiveHeight(1.5), fontWeight: 'bold', color: '#FFFFFF' }}>Dismiss</Text>
+                </TouchableOpacity>
+                {
+                  (errorServer === "Verify email before Loging In.") ?
+                    <TouchableOpacity onPress={() => {
+                      setIsErrorServer(false)
+                      setErrorServer("")
+                      navigation.navigate('EmailVerification')
+                    }} style={{ backgroundColor: '#03bafc', alignSelf: 'flex-end', padding: responsiveWidth(3), margin: responsiveWidth(2), borderRadius: responsiveWidth(3) }}>
+                      <Text styles={{ fontSize: responsiveHeight(1.5), fontWeight: 'bold', color: '#FFFFFF' }}>Verify Now</Text>
+                    </TouchableOpacity>
+                    : (errorServer === "Wrong Email & Password.") ?
+                        <TouchableOpacity onPress={() => {
+                          setIsErrorServer(false)
+                          setErrorServer("")
+                          navigation.navigate('EmailVerification')
+                        }} style={{ backgroundColor: '#03bafc', alignSelf: 'flex-end', padding: responsiveWidth(3), margin: responsiveWidth(2), borderRadius: responsiveWidth(3) }}>
+                          <Text styles={{ fontSize: responsiveHeight(1.5), fontWeight: 'bold', color: '#FFFFFF' }}>SignIn</Text>
+                        </TouchableOpacity>
+                        : null
+                   
+            }
+              </View>
+            </View>
+
+
+          </View>
+        </Modal>
+
+        <Modal transparent={true}
+          visible={isLoading}
         >
 
 
@@ -137,12 +163,12 @@ const Login = ({ navigation }) => {
 
 
 
-          <View backgroundColor={'rgba(50,50,50,.3)'} style={{flex:1,alignItems:'center',justifyContent:'center'}}>
-          <ActivityIndicator style={{}} size={'medium'} color={'black'} animating={true}/>
+          <View backgroundColor={'rgba(50,50,50,.3)'} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator style={{}} size={'medium'} color={'black'} animating={true} />
           </View>
         </Modal>
 
-       
+
 
 
         <LinearGradient
@@ -182,7 +208,7 @@ const Login = ({ navigation }) => {
             LOGIN
           </Text>
           <View style={{ marginVertical: responsiveHeight(2) }}>
-            
+
             <View style={{ marginTop: responsiveHeight(1) }}>
               <TextInput ref={emailRef} onSubmitEditing={handleEmailSubmit} onBlur={() => validateEmail(email, dispatch)} value={email} onChangeText={(text) => dispatch(setEmail(text))} placeholder='Email' style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: loginState.isErrorEmail ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
               <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
@@ -191,21 +217,21 @@ const Login = ({ navigation }) => {
             </View>
 
             <View style={{ marginTop: responsiveHeight(1) }}>
-              <TextInput  secureTextEntry={loginState.passwordHidden} ref={passwordRef} value={password} placeholder='password' onChangeText={(text) => dispatch(setPassword(text))} style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: loginState.isErrorPassword ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
+              <TextInput secureTextEntry={loginState.passwordHidden} ref={passwordRef} value={password} placeholder='password' onChangeText={(text) => dispatch(setPassword(text))} style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: loginState.isErrorPassword ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
               <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>
                 {loginState.isErrorPassword ? (<Text style={{ color: 'red' }}>{loginState.errorPassword}</Text>) : (<Text></Text>)}
               </View>
             </View>
 
             <View style={{ marginTop: responsiveHeight(-2) }}>
-              <Text onPress={()=>navigation.navigate('ForgetPasswordScreen')} style={{ color: '#03bafc', fontSize: responsiveHeight(2), textAlign: 'right' }}>
+              <Text onPress={() => navigation.navigate('ForgetPasswordScreen')} style={{ color: '#03bafc', fontSize: responsiveHeight(2), textAlign: 'right' }}>
                 Forgot Password?
               </Text>
             </View>
             <View style={{ marginTop: responsiveHeight(4) }}>
               <TouchableOpacity onPress={loginfunc} disabled={buttonDisabled} >
                 <LinearGradient
-                  onPress={() => {null }}
+                  onPress={() => { null }}
                   colors={['#42a1f5', '#03bafc', '#42c5f5']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -215,7 +241,7 @@ const Login = ({ navigation }) => {
                     alignSelf: 'center',
                     alignItems: 'center',
                     paddingVertical: responsiveHeight(1),
-                    opacity:buttonDisabled?.5:1.0
+                    opacity: buttonDisabled ? .5 : 1.0
                   }}>
                   <Text style={{ color: 'white', fontSize: 19 }}>LOGIN</Text>
                 </LinearGradient>
@@ -224,7 +250,13 @@ const Login = ({ navigation }) => {
             <View style={{ marginTop: responsiveHeight(3) }}>
               <Text style={{ color: 'black', fontSize: responsiveHeight(2), textAlign: 'center' }}>
                 Dont't have an account?{' '}
-                <Text style={{color: '#03bafc'}}onPress={() => navigation.navigate('Signup')}>Signup</Text>
+                <Text style={{ color: '#03bafc' }} onPress={() => navigation.navigate('Signup')}>Signup</Text>
+              </Text>
+            </View>
+            <View style={{ marginTop: responsiveHeight(3) }}>
+              <Text style={{ color: 'black', fontSize: responsiveHeight(2), textAlign: 'center' }}>
+                Unverified Emal?{' '}
+                <Text style={{ color: '#03bafc' }} onPress={() => navigation.navigate('EmailVerification')}>Verify Now</Text>
               </Text>
             </View>
             {/* <Text style={{color:'red'}}>{serverResponse}</Text> */}

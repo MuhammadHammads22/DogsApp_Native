@@ -20,9 +20,16 @@ import { SignupValidation } from '../Src/utils/authValidation/signup/ServerRespo
 import LinearGradient from 'react-native-linear-gradient';
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 const SignUpForm = ({navigation}) => {
+  useEffect(()=>{
+    return () => {
+      // Component will unmount logic
+      // console.log('Component will unmount');
+      // You can call your function here
+      dispatch(setToInitialState())
+    }; 
+  },[])
   const signupState=useSelector((state)=>state.signup.signup);
   const email=signupState.email
-  const propPhoneNumber=signupState.propPhoneNumber
   const userName=signupState.userName
   const fullName=signupState.fullName
   const phoneNumber=signupState.phoneNumber
@@ -32,8 +39,7 @@ const SignUpForm = ({navigation}) => {
   const password=signupState.password
   const confirmPassword=signupState.confirmPassword
   const dispatch=useDispatch()
-  const buttonDisabled=false
-  // const buttonDisabled=(!email|| !userName ||!fullName ||!phoneNumber ||!dob ||!religion ||!gender || !password ||!confirmPassword||signupState.isErrorEmail || signupState.isErrorUserName  || signupState.isErrorFullName || signupState.isErrorDob || signupState.isErrorReligion || signupState.isErrorPhoneNumber || signupState.isErrorGender ||signupState.isErrorPassword ||signupState.isErrorConfirmPassword )
+  const buttonDisabled=(!email|| !userName ||!fullName ||!phoneNumber ||!dob ||!religion ||!gender || !password ||!confirmPassword||signupState.isErrorEmail || signupState.isErrorUserName  || signupState.isErrorFullName || signupState.isErrorDob || signupState.isErrorReligion || signupState.isErrorPhoneNumber || signupState.isErrorGender ||signupState.isErrorPassword ||signupState.isErrorConfirmPassword )
   const [isErrorServer,setIsErrorServer] = useState(false)
   const [errorServer,setErrorServer] = useState("")
   // const openWebPage = () => {
@@ -52,7 +58,7 @@ const SignUpForm = ({navigation}) => {
         // Action for successful registration
         setIsErrorServer(true)
         setErrorServer("Registration successful!. Verify your email.")
-        dispatch(setToInitialState())
+        
       } else{
 
          const errors=SignupValidation(data.error.data)
@@ -160,6 +166,7 @@ const SignUpForm = ({navigation}) => {
         <TouchableOpacity onPress={()=>{setIsErrorServer(false)
           setErrorServer("")
           navigation.navigate('EmailVerification')
+          dispatch(setToInitialState())
           }} 
           style={{backgroundColor:'#03bafc',alignSelf:'flex-end',padding:responsiveWidth(3),margin:responsiveWidth(2),borderRadius:responsiveWidth(3)}}>
         <Text styles={{fontSize:responsiveHeight(1.5),fontWeight:'bold',color:'#FFFFFF'}}>Verify Email</Text>
@@ -376,7 +383,10 @@ const SignUpForm = ({navigation}) => {
             <View style={{ marginTop: responsiveHeight(3) }}>
               <Text style={{ color: 'black', fontSize: responsiveHeight(2), textAlign: 'center' }}>
                 Already have an account?{' '}
-                <Text style={{color:'#03bafc'}} onPress={() => navigation.popToTop()}>Login</Text>
+                <Text style={{color:'#03bafc'}} onPress={() =>{ navigation.popToTop()
+dispatch(setToInitialState())
+
+                }}>Login</Text>
               </Text>
             </View>
           </View>

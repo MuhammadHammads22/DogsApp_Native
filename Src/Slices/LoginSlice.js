@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { setToInitialState } from './SignupSlice';
 
 // Initial states
 const initialState = {
@@ -20,6 +21,9 @@ const loginSlice = createSlice({
   reducers: {
     setEmail(state, action) {
       state.login.email = action.payload;
+    },
+    setLoginToInitialState(state,action){
+      state.login=initialState
     },
 
     setErrorEmail(state, action) {
@@ -57,6 +61,7 @@ export const {
   setErrorPassword,
   setIsErrorPassword,
   togglePasswordVisibility,
+  setLoginToInitialState,
 } = loginSlice.actions;
 
 // Export reducer
