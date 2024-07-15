@@ -2,27 +2,24 @@ import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, ScrollView, St
 import React, { useRef, useState } from 'react'
 import { useLoginMutation } from '../Src/Api/Auth'
 import { useDispatch, useSelector } from 'react-redux'
-import { setEmail, setErrorEmail, setIsErrorEmail, setLoginToInitialState, setPassword } from '../Src/Slices/LoginSlice'
-import { validateEmail, validatePassword } from '../Src/utils/authValidation/login/LoginValidation'
+import { setEmail,setLoginToInitialState, setPassword } from '../Src/Slices/LoginSlice'
+import { validateEmail } from '../Src/utils/authValidation/login/LoginValidation'
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions'
 import LinearGradient from 'react-native-linear-gradient'
 import { TouchableOpacity } from 'react-native'
-import { server } from '../metro.config'
 import { CommonActions } from '@react-navigation/native'
-import { colors } from '../Src/Constants/Theme'
-import { setAccessToken, setRefreshToken } from '../Src/store/localStore'
-import { setToInitialState } from '../Src/Slices/SignupSlice'
+import { setUserData } from '../Src/store/localStore'
+import {  setUserInfo } from '../Src/Slices/UserSlice'
 
 const Login = ({ navigation }) => {
-
   const loginState = useSelector((state) => state.login.login);
+  const userState=useSelector((state)=>state.userInfo.userInfo)
   const email = loginState.email
   const password = loginState.password
   const dispatch = useDispatch()
   const buttonDisabled = (!email || !password || loginState.isErrorEmail || loginState.isErrorPassword)
   const [isErrorServer, setIsErrorServer] = useState(false)
   const [errorServer, setErrorServer] = useState("")
-
 
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
@@ -42,45 +39,69 @@ const Login = ({ navigation }) => {
   const [login, { data, isLoading, error }] = useLoginMutation();
   const loginfunc = async () => {
     await login({ email: loginState.email, password: loginState.password }).then(data => {
-      console.log(data)
+      // console.log('responsedata',data)
       if (data?.error) {
         if (data.error.data) {
           const { errors } = data.error.data
-          console.log(errors.non_field_errors)
+          // console.log(errors.non_field_errors)
           if (errors.non_field_errors[0] === "You are not Register User") {
-            console.log("register before login")
+            // console.log("register before login")
             setIsErrorServer(true)
             setErrorServer("Wrong Email & Password.")
             // setServerResponse(state=>{return{...state,error:"This email is not registered. Register first",isError:true}})
           }
           if (errors.non_field_errors[0] === "User is not verified. Please check your email for verification link/code.") {
-            console.log("verify email plz..")
+            // console.log("verify email plz..")
             setIsErrorServer(true)
             setErrorServer("Verify email before Loging In.")
           }
         }
 
       } else {
-        const { data: { token: { access, refresh } } } = data;
+        const { data: { token: { access, refresh }
+          } 
+      } = data;
 
-        // Console log the destructured values
-        console.log('Access Token:', access);
-        console.log('Refresh Token:', refresh);
+      const { data: {
+          data: { username, full_name, date_of_birth, religion, gender, email }
+          } 
+      } = data;
+// setting user credential on login to temporary state
+      dispatch(setUserInfo({
+        userName: username,
+        fullName: full_name,
+        dateOfBirth: date_of_birth,
+        religion: religion,
+        gender: gender,
+        email: email,
+        accessToken: access,
+        refreshToken:refresh
+    }))
+    // setting user credential on login to local storage
+    setUserData( JSON.stringify({
+      userName: username,
+      fullName: full_name,
+      dateOfBirth: date_of_birth,
+      religion: religion,
+      gender: gender,
+      email: email,
+      accessToken: access,
+      refreshToken:refresh
+  }))
 
-        // Validate the tokens in a conditional statement
+    
         if (access && refresh) {
-          setAccessToken(access)
-          setRefreshToken(refresh)
+          
           console.warn("Login Successfull")
-          // navigation.navigate('HomeGraph')
+          // console.log('userstatefrom login screen',userState)
+
           navigation.dispatch(
             CommonActions.reset({
               index: 0,
               routes: [{ name: 'HomeGraph' }],
             })
           );
-          dispatch(setLoginToInitialState())
-          // console.log('Both access and refresh tokens are available.');
+          // dispatch(setLoginToInitialState())
         } else {
           console.log('One or both tokens are missing.');
         }
@@ -136,16 +157,16 @@ const Login = ({ navigation }) => {
                       <Text styles={{ fontSize: responsiveHeight(1.5), fontWeight: 'bold', color: '#FFFFFF' }}>Verify Now</Text>
                     </TouchableOpacity>
                     : (errorServer === "Wrong Email & Password.") ?
-                        <TouchableOpacity onPress={() => {
-                          setIsErrorServer(false)
-                          setErrorServer("")
-                          navigation.navigate('EmailVerification')
-                        }} style={{ backgroundColor: '#03bafc', alignSelf: 'flex-end', padding: responsiveWidth(3), margin: responsiveWidth(2), borderRadius: responsiveWidth(3) }}>
-                          <Text styles={{ fontSize: responsiveHeight(1.5), fontWeight: 'bold', color: '#FFFFFF' }}>SignIn</Text>
-                        </TouchableOpacity>
-                        : null
-                   
-            }
+                      <TouchableOpacity onPress={() => {
+                        setIsErrorServer(false)
+                        setErrorServer("")
+                        navigation.navigate('EmailVerification')
+                      }} style={{ backgroundColor: '#03bafc', alignSelf: 'flex-end', padding: responsiveWidth(3), margin: responsiveWidth(2), borderRadius: responsiveWidth(3) }}>
+                        <Text styles={{ fontSize: responsiveHeight(1.5), fontWeight: 'bold', color: '#FFFFFF' }}>SignIn</Text>
+                      </TouchableOpacity>
+                      : null
+
+                }
               </View>
             </View>
 
@@ -156,14 +177,7 @@ const Login = ({ navigation }) => {
         <Modal transparent={true}
           visible={isLoading}
         >
-
-
-
-
-
-
-
-          <View backgroundColor={'rgba(50,50,50,.3)'} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View backgroundColor={'rgba(50,50,50,.3)'} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <ActivityIndicator style={{}} size={'medium'} color={'black'} animating={true} />
           </View>
         </Modal>

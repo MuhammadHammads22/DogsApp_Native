@@ -1,46 +1,165 @@
-import { View, Text, TouchableOpacity } from 'react-native'
-import React, { useLayoutEffect } from 'react'
+import { View, Text, StyleSheet, FlatList, Button, TouchableOpacity, Modal, ActivityIndicator } from 'react-native'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { CommonActions, useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions'
+import PostCard from './PostCard'
+import { getAccessToken, getRefreshToken, getUserData } from '../Src/store/localStore'
+import { useCreatePostMutation, useGetPostListQuery } from '../Src/Api/Posts'
+import LinearGradient from 'react-native-linear-gradient'
+import { useDispatch, useSelector } from 'react-redux'
+import { setUserInfo, setUserInfoToInitialState } from '../Src/Slices/UserSlice'
+// import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+// import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder'
+import PostShimmer from './PostShimmer'
+
+const ShimmerPlaceHolder = createShimmerPlaceholder(LinearGradient)
+
+const ShimmerView = () => {
+  <View style={styles.mainPostShimmer}>
+    <View style={styles.upperPostShimmer}>
+      {/* postheader */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* avatar+name close */}
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+          <ShimmerPlaceHolder style={styles.avatarShimmer} />
+          <ShimmerPlaceHolder style={styles.nameShimmer} />
+        </View>
+        <ShimmerPlaceHolder style={{ width: responsiveWidth(2.5), height: responsiveHeight(3) }} />
+      </View>
+      {/* post description section */}
+      <View>
+        {/* <Text style={styles.description}>{post.postData.item.description}</Text> */}
+        <ShimmerPlaceHolder style={styles.descriptionShimmer} />
+      </View>
+      {/* video section */}
+      <ShimmerPlaceHolder style={styles.postImageShimmer} />
+    </View>
+
+  </View>
+}
 
 
 
 const Home = ({ navigation }) => {
 
+  const userState = useSelector((state) => state.userInfo.userInfo)
+  // console.log("user state from home",userState)
+  // const [accessToken, setAccessToken] = useState('');
+  // const [refreshToken, setRefreshToken] = useState('');
 
-  async function Logout(){
-    try{
-    await AsyncStorage.removeItem('accessToken').then(console.log("access remove"))
-    await AsyncStorage.removeItem('refreshToken').then(console.log("refresh remove"))
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      })
-    );
-  }catch(error){
-      console.log(error,"error logging out")
+  const dispatch = useDispatch()
+
+
+
+  const { data, error, isLoading } = useGetPostListQuery({ token: userState.accessToken });
+  const [createPost, { errorc, isLoadingc }] = useCreatePostMutation()
+  // isLoading ? console.log('loading') : console.log("home", data)
+
+  function createPostFun() {
+    createPost({
+      "seeker": "Dada Jan",
+      "phone_number": "+92 331 2384778",
+      "address": "karachi",
+      "bank_name": "meezan",
+      "bank_title": "Kareem",
+      "account_number": "3247897234",
+      "needed_money": 0,
+      "description": "there is no content to show",
+      "kind": "zakat",
+      "creator": "jana"
+    }).then(data => {
+      console.log(data)
+    })
   }
-    }
-    
+  useEffect(() => {
+    async function getToken() {
+      try {
+        var data = await getUserData()
+        if (data) {
+          data = JSON.parse(data)
+          dispatch(setUserInfo(data))
+        }
+
+      } catch (error) {
+        console.error('Error checking token:', error);
+      }
+    } getToken()
+
+  }, [])
+
+
+
+
   const nav = useNavigation()
   useLayoutEffect(() => {
     nav.setOptions({ headertitle: "" })
   }, [])
   return (
     <SafeAreaView>
-    <View>
-      <Text>Home</Text>
-      <TouchableOpacity onPress={
-                 Logout
-                } style={{ backgroundColor: '#03bafc', alignSelf: 'center', padding: responsiveWidth(3), margin: responsiveWidth(2), borderRadius: responsiveWidth(3) }}>
-                  <Text styles={{ fontSize: responsiveHeight(1.5), fontWeight: 'bold', color: '#FFFFFF' }}>Logout</Text>
-                </TouchableOpacity>
-    </View>
+      <TouchableOpacity onPress={() => navigation.navigate('CreatePostScreen')}>
+        <View style={{ flexDirection: 'row', margin: responsiveWidth(2) }}>
+          <View style={{ backgroundColor: 'white', padding: responsiveWidth(2), borderTopLeftRadius: responsiveWidth(3), borderBottomLeftRadius: responsiveWidth(3) }}>
+            <MaterialIcons name='post-add' size={responsiveWidth(9)} color="#73788B" />
+          </View>
+          <View style={{ flex: 1, padding: responsiveWidth(4), backgroundColor: '#03bafc', borderTopRightRadius: responsiveWidth(3), borderBottomRightRadius: responsiveWidth(3), justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ fontSize: responsiveWidth(4), color: 'white', fontWeight: 'bold' }}>Create Post</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+      {/* {console.log(data)} */}
+    {data? 
+    <FlatList
+    style={styles.feed}
+    data={data}
+    renderItem={(post) =>
+
+      <PostCard postData={post} navigation={navigation} isLoading={isLoading} />
+
+    }
+    keyExtractor={item => item.id}
+    showsVerticalScrollIndicator={false}
+  ></FlatList>
+  :
+  <FlatList
+    style={styles.feed}
+    data={[1,1,1,1,]}
+    renderItem={() =>
+        <PostShimmer/>
+    }
+   
+    showsVerticalScrollIndicator={false}
+  ></FlatList>
+  
+  
+
+      
+    }
+
+          
+        
+
+
+    
+
+
     </SafeAreaView>
   )
 }
+
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#EBECF4"
+  },
+  feed: {
+    marginHorizontal: responsiveWidth(3)
+  }
+});
 
 export default Home

@@ -14,30 +14,32 @@ import Login from './Screens/Login';
 import Signup from './Screens/Signup';
 import ForgetPassword from './Screens/ForgetPassword';
 import TermsAndConditions from './Screens/TermsAndConditions';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import {  store } from './Src/store/Store';
 import SignUpForm from './Screens/Signup';
 import EmailVerification from './Screens/EmailVerificationScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MyDrawer  from './Screens/DrawerNavigator';
 import HomeGraph from './Screens/HomeGraph';
+import CommentScreen from './Screens/CommentScreen';
+import { getAccessToken, getUserData } from './Src/store/localStore';
+import { setUserInfo } from './Src/Slices/UserSlice';
+import CreatePostScreen from './Screens/CreatePostScreen';
 // import { PersistGate } from 'redux-persist/integration/react';
 
 function App(){
 
-const [initialRoute,setInitialRoute]=useState("Login")
+const [initialRoute,setInitialRoute]=useState("")
 const Stack = createNativeStackNavigator();
 useEffect(()=>{
   async function getToken(){
     try{
-      console.log('Checking tokens...');
-      const accessToken = await AsyncStorage.getItem('accessToken');
-      console.log('Access Token:', accessToken);
-      const refreshToken = await AsyncStorage.getItem('refreshToken');
-      console.log('Refresh Token:', refreshToken);
-    if(accessToken &&  refreshToken){
-      setInitialRoute("HomeGraph")
-       console.log('Refresh Token:', refreshToken);
+    var data= await getUserData() 
+    if(data){
+      setInitialRoute("HomeGraph") //  console.log('Refresh Token:', refreshToken);
+    }
+    else{
+      setInitialRoute("Login") 
     }
     }catch (error) {
       console.error('Error checking token:', error);
@@ -49,8 +51,7 @@ useEffect(()=>{
     
 },[])
 
-function MyStack() {
-  
+function MyStack() {  
 {if(initialRoute==="Login"){
   return(
   <Stack.Navigator  initialRouteName={'Login'} screenOptions={{headerShown:false}}>
@@ -60,6 +61,9 @@ function MyStack() {
     <Stack.Screen name="Signup" component={SignUpForm} options={{}} />
     <Stack.Screen name="TermsAndConditions" component={TermsAndConditions} options={{}} />
     <Stack.Screen name="HomeGraph" component={HomeGraph} />
+    <Stack.Screen name="CommentsScreen" component={CommentScreen} />
+    <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} />
+
   </Stack.Navigator>)
 }else{
   return(
@@ -70,6 +74,8 @@ function MyStack() {
       <Stack.Screen name="Signup" component={SignUpForm} options={{}} />
       <Stack.Screen name="TermsAndConditions" component={TermsAndConditions} options={{}} />
       <Stack.Screen name="HomeGraph" component={HomeGraph} />
+      <Stack.Screen name="CommentsScreen" component={CommentScreen} />
+      <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} />
     </Stack.Navigator>)
 }
 }
