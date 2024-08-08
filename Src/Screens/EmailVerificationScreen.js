@@ -2,10 +2,10 @@ import {  ScrollView, TextInput, View, Text, KeyboardAvoidingView, StatusBar, To
 import React, {  useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions'
-import {  useVerifyPhoneNumberMutation } from '../Src/Api/Auth'
 import LinearGradient from 'react-native-linear-gradient'
 import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field'
 import { useSelector } from 'react-redux'
+import { useVerifyPhoneNumberMutation } from '../Api/Auth'
 
 const EmailVerification = ({navigation,route}) => {
   const [verifyPhoneNumber, { data, isLoading, error }] = useVerifyPhoneNumberMutation();

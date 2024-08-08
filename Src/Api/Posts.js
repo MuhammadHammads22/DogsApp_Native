@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const postApis = createApi({
   reducerPath: 'postApis',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: 'http://10.0.2.2:8000/post/'   
+    baseUrl: 'https://addazakat.uk.to/post/'   
   }),
   
   endpoints: (builder) => ({
@@ -156,28 +156,26 @@ export const postApis = createApi({
     }),
 
     comment : builder.mutation({
-      query: (formData) => {
+      query: ({slug,comment,token}) => {
         return {
           url: 'PostCommenta/',
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${token}`,
           },
-          body: formData
+          body: {slug:slug,body:comment}
         }
       },
     }),
-
     getComments: builder.query({
-      query: (slug) => {
-        return {
-          url: `GetComments/${slug}`,
+      query: ({slug,token}) => ({
+        // console.log("accesstoken:"+token,"\nslug:"+slug)
+          url:`GetComments/${slug}`,
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${token}`,
           }
-        }
-      },
+        })
     }),
 
     search: builder.query({

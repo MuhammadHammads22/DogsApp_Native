@@ -5,9 +5,9 @@ import LinearGradient from 'react-native-linear-gradient'
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions'
 import { useDispatch } from 'react-redux'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { setUserInfoToInitialState } from '../Src/Slices/UserSlice'
 import { CommonActions } from '@react-navigation/native'
-import { removeUserData } from '../Src/store/localStore'
+import { removeUserData } from '../store/localStore'
+import { setUserInfoToInitialState } from '../Slices/UserSlice'
 
 async function Logout(navigation,dispatch){
   try{

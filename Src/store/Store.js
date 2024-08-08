@@ -4,7 +4,7 @@ import {loginReducer} from "../Slices/LoginSlice";
 import { signupReducer } from "../Slices/SignupSlice";
 import { postApis } from "../Api/Posts";
 import { userInfoReducer } from "../Slices/UserSlice";
-
+import createPostReducer from "../Slices/CreatePostSlice"
 
 
 
@@ -12,6 +12,7 @@ import { userInfoReducer } from "../Slices/UserSlice";
 export const store=configureStore({
     reducer:{
       login:loginReducer,
+      createPost:createPostReducer,
       signup:signupReducer,
       userInfo:userInfoReducer,
       [Api.reducerPath]:Api.reducer,
@@ -22,4 +23,4 @@ export const store=configureStore({
     serializableCheck: false}).concat( Api.middleware)
     .concat(postApis.middleware)   
 })
-export const token=store.getState().userInfo.userInfo.accessToken
+// export const token=store.getState().userInfo.userInfo.accessToken

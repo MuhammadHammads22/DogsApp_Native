@@ -1,30 +1,31 @@
+import 'react-native-gesture-handler'
+
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
  *
  * @format
  */
-import 'react-native-gesture-handler'
 import React, { useEffect, useState } from 'react';
 import { StyleSheet,} from 'react-native';
 import SplashScreen from 'react-native-splash-screen'
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Login from './Screens/Login';
-import Signup from './Screens/Signup';
-import ForgetPassword from './Screens/ForgetPassword';
-import TermsAndConditions from './Screens/TermsAndConditions';
+import Login from './Src/Screens/Login';
+import Signup from './Src/Screens/Signup';
+import ForgetPassword from './Src/Screens/ForgetPassword';
+import TermsAndConditions from './Src/Screens/TermsAndConditions';
 import { Provider, useDispatch } from 'react-redux';
 import {  store } from './Src/store/Store';
-import SignUpForm from './Screens/Signup';
-import EmailVerification from './Screens/EmailVerificationScreen';
+import SignUpForm from './Src/Screens/Signup';
+import EmailVerification from './Src/Screens/EmailVerificationScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import MyDrawer  from './Screens/DrawerNavigator';
-import HomeGraph from './Screens/HomeGraph';
-import CommentScreen from './Screens/CommentScreen';
+import MyDrawer  from './Src/Screens/DrawerNavigator';
+import HomeGraph from './Src/Screens/HomeGraph';
+import CommentScreen from './Src/Screens/CommentScreen';
 import { getAccessToken, getUserData } from './Src/store/localStore';
 import { setUserInfo } from './Src/Slices/UserSlice';
-import CreatePostScreen from './Screens/CreatePostScreen';
+import CreatePostScreen from './Src/Screens/CreatePostScreen';
 // import { PersistGate } from 'redux-persist/integration/react';
 
 function App(){
@@ -61,8 +62,8 @@ function MyStack() {
     <Stack.Screen name="Signup" component={SignUpForm} options={{}} />
     <Stack.Screen name="TermsAndConditions" component={TermsAndConditions} options={{}} />
     <Stack.Screen name="HomeGraph" component={HomeGraph} />
-    <Stack.Screen name="CommentsScreen" component={CommentScreen} />
-    <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} />
+    <Stack.Screen name="CommentsScreen" component={CommentScreen} options={{presentation:'modal',headerShown:true}} />
+    <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} options={{presentation:'modal'}} />
 
   </Stack.Navigator>)
 }else{
@@ -74,8 +75,8 @@ function MyStack() {
       <Stack.Screen name="Signup" component={SignUpForm} options={{}} />
       <Stack.Screen name="TermsAndConditions" component={TermsAndConditions} options={{}} />
       <Stack.Screen name="HomeGraph" component={HomeGraph} />
-      <Stack.Screen name="CommentsScreen" component={CommentScreen} />
-      <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} />
+      <Stack.Screen name="CommentsScreen" component={CommentScreen} options={{presentation:'modal',headerShown:true}} />
+      <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} options={{presentation:'modal'}}/>
     </Stack.Navigator>)
 }
 }

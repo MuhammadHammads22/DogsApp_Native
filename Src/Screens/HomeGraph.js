@@ -1,11 +1,11 @@
 import { Platform, Image } from 'react-native'
 import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 import Home from './Home';
-import Satisfied from './Satisfied';
 import Saved from './Saved';
 import Profile from './Profile';
-import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
+import Satisfied from './Satisfied';
 // import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 
 

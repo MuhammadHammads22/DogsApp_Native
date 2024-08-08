@@ -1,15 +1,16 @@
 import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, ScrollView, StatusBar, ActivityIndicator, Modal } from 'react-native'
 import React, { useRef, useState } from 'react'
-import { useLoginMutation } from '../Src/Api/Auth'
 import { useDispatch, useSelector } from 'react-redux'
-import { setEmail,setLoginToInitialState, setPassword } from '../Src/Slices/LoginSlice'
-import { validateEmail } from '../Src/utils/authValidation/login/LoginValidation'
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions'
 import LinearGradient from 'react-native-linear-gradient'
 import { TouchableOpacity } from 'react-native'
 import { CommonActions } from '@react-navigation/native'
-import { setUserData } from '../Src/store/localStore'
-import {  setUserInfo } from '../Src/Slices/UserSlice'
+import { useLoginMutation } from '../Api/Auth'
+import { setUserData } from '../store/localStore'
+import { setUserInfo } from '../Slices/UserSlice'
+import LoginModal from '../Components/LoginModal'
+import { setEmail, setPassword } from '../Slices/LoginSlice'
+import { validateEmail } from '../utils/authValidation/login/LoginValidation'
 
 const Login = ({ navigation }) => {
   const loginState = useSelector((state) => state.login.login);
@@ -124,8 +125,8 @@ const Login = ({ navigation }) => {
           backgroundColor={'#03bafc'}
         />
 
-
-        <Modal transparent={true}
+<LoginModal navigation={navigation} errorServer={errorServer} isErrorServer={isErrorServer} setErrorServer={setErrorServer} setIsErrorServer={setIsErrorServer} />
+        {/* <Modal transparent={true}
           visible={isErrorServer}
           onDismiss={() => {
             setIsErrorServer(false)
@@ -172,7 +173,7 @@ const Login = ({ navigation }) => {
 
 
           </View>
-        </Modal>
+        </Modal> */}
 
         <Modal transparent={true}
           visible={isLoading}

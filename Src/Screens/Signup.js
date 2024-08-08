@@ -11,14 +11,14 @@ import {
   KeyboardAvoidingView,
   StatusBar,
 } from 'react-native';
-import { useSignUpMutation } from '../Src/Api/Auth';
 import { useDispatch, useSelector } from 'react-redux';
-import { setPassword,setConfirmPassword, setDob, setEmail, setErrorConfirmPassword, setErrorDob, setErrorEmail, setErrorFullName, setErrorGender, setErrorPassword, setErrorReligion, setErrorUserName, setFullName, setGender, setIsErrorConfirmPassword, setIsErrorDate, setIsErrorEmail, setIsErrorFullName, setIsErrorGender, setIsErrorPassword, setIsErrorReligion, setIsErrorUserName, setReligion, setUserName, setToInitialState, setPhoneNumber } from '../Src/Slices/SignupSlice';
-import { validateConfirmPassword, validateDob, validateEmail, validateFullName, validateGender, validatePassword, validatePhoneNumber, validateReligion, validateUserName } from '../Src/utils/authValidation/signup/SignupValidation';
-import useFieldFocus from '../Src/utils/authValidation/signup/SignupFocusManager';
-import { SignupValidation } from '../Src/utils/authValidation/signup/ServerResponseValidationSignup';
 import LinearGradient from 'react-native-linear-gradient';
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
+import { setConfirmPassword, setDob, setEmail, setErrorEmail, setErrorUserName, setFullName, setGender, setIsErrorEmail, setIsErrorUserName, setPassword, setPhoneNumber, setReligion, setToInitialState, setUserName } from '../Slices/SignupSlice';
+import { useSignUpMutation } from '../Api/Auth';
+import { SignupValidation } from '../utils/authValidation/signup/ServerResponseValidationSignup';
+import useFieldFocus from '../utils/authValidation/signup/SignupFocusManager';
+import { validateConfirmPassword, validateDob, validateEmail, validateFullName, validateGender, validatePassword, validatePhoneNumber, validateReligion, validateUserName } from '../utils/authValidation/signup/SignupValidation';
 const SignUpForm = ({navigation}) => {
   useEffect(()=>{
     return () => {
@@ -287,7 +287,7 @@ const SignUpForm = ({navigation}) => {
                            onBlur={()=>validateDob(dob,dispatch)}
                            ref={refs.dob}
                            onSubmitEditing={handleDobSubmit} 
-                           value={dob} 
+                           value={dob}
                            placeholder='Birth Date' 
                            style={{ fontSize: responsiveHeight(2.5), height: responsiveHeight(5), padding: responsiveHeight(.5), borderBottomColor: signupState.isErrorDob ? 'red' : '#03bafc', borderBottomWidth: 2 }} />
               <View style={{ marginVertical: responsiveHeight(1), alignItems: 'flex-start' }}>

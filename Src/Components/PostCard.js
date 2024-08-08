@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useDownvoteMutation, useUpvoteMutation } from "../Src/Api/Posts";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 import { useSelector } from "react-redux";
@@ -8,6 +7,9 @@ import { responsiveHeight, responsiveWidth } from "react-native-responsive-dimen
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder'
+import { useDownvoteMutation, useUpvoteMutation } from "../Api/Posts";
+import Video from "react-native-video";
+// import Video from "react-native-video";
 
 const ShimmerPlaceHolder = createShimmerPlaceholder(LinearGradient)
 
@@ -17,6 +19,8 @@ const PostCard = (post) => {
   // console.log("user state from post card",userState.accessToken)
   // console.log('token prop',post.userData)
   // upvote handling! 
+  const screenWidth=Dimensions.get('window').width
+  const [carouselData,setCarouselData]=useState(["https://addazakat.s3.ap-south-1.amazonaws.com/posts/abuubaida01/1.mp4","https://addazakat.s3.ap-south-1.amazonaws.com/posts/abuubaida01/5.mp4"])
   const [loading,setLoading]=useState(post.isLoading)
   const [upvote, setUpvotes] = useState(post.postData.item.upvote_count)
   const [downvote, setDownvote] = useState(post.postData.item.downvote_count)
@@ -62,20 +66,19 @@ const PostCard = (post) => {
   }
 
   const handleCommentClick = () => {
-    post.navigation.navigate('CommentsScreen')
+    post.navigation.navigate('CommentsScreen',{slug: post.postData.item.slug})
   };
 
 
   return ( 
+    
     <View style={styles.mainPost}>
       <View style={styles.upperPost}>
         {/* postheader */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',padding:responsiveWidth(2) }}>
           {/* avatar+name close */}
-          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
             <View style={styles.avatar}></View>
             <Text style={styles.name}>{post.postData.item.creator}</Text>
-          </View>
           <Entypo name="dots-three-vertical" size={24} color="#73788B" />
         </View>
         {/* post description section */}
@@ -83,7 +86,27 @@ const PostCard = (post) => {
           <Text style={styles.description}>{post.postData.item.description}</Text>
         </View>
         {/* video section */}
-        <View style={styles.postImage}></View>
+        <View style={styles.postImage}>
+          {/* <FlatList
+          data={carouselData}
+          horizontal={true}
+          pagingEnabled={true}
+          style={{flex:1}}
+          renderItem={(item,index)=>{
+            // {console.log(item)}
+            return(
+            <Video
+            source={{ uri: item.item }} // Can be a URL or a local file.
+            style={{position:'static',top:0,bottom:0,left:0,right:0}}
+            key={index}
+            paused={true}
+            controls={true} // Display default video controls
+            resizeMode="contain" // Can be "contain", "cover", "stretch", etc.
+            onError={(error) => console.log('Video Error:', error)} // Callback when video cannot be loaded
+          />)
+          }}
+          /> */}
+        </View>
       </View>
       {/* likes comment section */}
       <View style={{ flex: 1, flexDirection: "row", justifyContent: 'space-around', backgroundColor: '#D7D8E0' ,borderBottomLeftRadius:responsiveWidth(3),borderBottomRightRadius:responsiveWidth(3)}}>
@@ -126,6 +149,7 @@ const PostCard = (post) => {
     </View>
     
     
+    
   //   <View style={styles.mainPostShimmer}>
   //   <View style={styles.upperPostShimmer}>
   //     {/* postheader */}
@@ -164,16 +188,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderTopStartRadius: responsiveWidth(3),
     borderTopEndRadius: responsiveWidth(3),
-    padding: responsiveWidth(4),
-    paddingBottom:responsiveWidth(2),
     flexDirection: "column"
   },
  mainPost:{
+  flex:1,
   marginVertical:responsiveHeight(1.5),
-  elevation:5,
-  shadowColor:'red',
-  shadowOffset:0,
-  shadowOpacity:5
+  elevation:responsiveHeight(1),
+  shadowColor:'black',
+  shadowOffset:responsiveHeight(1),
+  shadowOpacity:responsiveHeight(1),
+  shadowRadius:responsiveWidth(5)
  },
   avatar: {
     width: responsiveWidth(10),
@@ -183,21 +207,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'gray'
   },
   name: {
+    flex:1,
     fontSize: responsiveWidth(5),
     fontWeight: "500",
     color: "#454D65"
   },
   description: {
-    marginTop: responsiveHeight(2.5),
+    padding:responsiveWidth(2),
     fontSize: responsiveWidth(4),
     color: "#838899"
   },
   postImage: {
-    width: undefined,
-    height: responsiveHeight(25),
-    borderRadius: responsiveWidth(3),
-    marginVertical: 10,
-    backgroundColor: 'green'
+    backgroundColor:'black',
+    flex:1,
+    height: responsiveHeight(30),
+    // borderRadius: responsiveWidth(3),
+    marginVertical: 10
   },
   containerShimmer: {
       flex: 1,

@@ -4,17 +4,17 @@ import { CommonActions, useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions'
-import PostCard from './PostCard'
-import { getAccessToken, getRefreshToken, getUserData } from '../Src/store/localStore'
-import { useCreatePostMutation, useGetPostListQuery } from '../Src/Api/Posts'
+import { getAccessToken, getRefreshToken, getUserData } from '../store/localStore'
+import { useCreatePostMutation, useGetPostListQuery } from '../Api/Posts'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
-import { setUserInfo, setUserInfoToInitialState } from '../Src/Slices/UserSlice'
 // import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 // import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder'
-import PostShimmer from './PostShimmer'
+import { setUserInfo } from '../Slices/UserSlice'
+import PostCard from '../Components/PostCard'
+import PostShimmer from '../Components/PostShimmer'
 
 const ShimmerPlaceHolder = createShimmerPlaceholder(LinearGradient)
 
@@ -56,25 +56,7 @@ const Home = ({ navigation }) => {
 
 
   const { data, error, isLoading } = useGetPostListQuery({ token: userState.accessToken });
-  const [createPost, { errorc, isLoadingc }] = useCreatePostMutation()
-  // isLoading ? console.log('loading') : console.log("home", data)
-
-  function createPostFun() {
-    createPost({
-      "seeker": "Dada Jan",
-      "phone_number": "+92 331 2384778",
-      "address": "karachi",
-      "bank_name": "meezan",
-      "bank_title": "Kareem",
-      "account_number": "3247897234",
-      "needed_money": 0,
-      "description": "there is no content to show",
-      "kind": "zakat",
-      "creator": "jana"
-    }).then(data => {
-      console.log(data)
-    })
-  }
+ 
   useEffect(() => {
     async function getToken() {
       try {
@@ -100,7 +82,7 @@ const Home = ({ navigation }) => {
   }, [])
   return (
     <SafeAreaView>
-      <TouchableOpacity onPress={() => navigation.navigate('CreatePostScreen')}>
+      <TouchableOpacity  onPress={() => navigation.navigate('CreatePostScreen')}>
         <View style={{ flexDirection: 'row', margin: responsiveWidth(2) }}>
           <View style={{ backgroundColor: 'white', padding: responsiveWidth(2), borderTopLeftRadius: responsiveWidth(3), borderBottomLeftRadius: responsiveWidth(3) }}>
             <MaterialIcons name='post-add' size={responsiveWidth(9)} color="#73788B" />

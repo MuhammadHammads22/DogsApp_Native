@@ -2,8 +2,8 @@ import {  ScrollView, TextInput, View, Text, KeyboardAvoidingView, StatusBar, To
 import React, {  useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions'
-import { useSendPasswordResetEmailMutation } from '../Src/Api/Auth'
 import LinearGradient from 'react-native-linear-gradient'
+import { useSendPasswordResetEmailMutation } from '../Api/Auth'
 
 const ForgetPassword = ({navigation}) => {
   const [sendResetEmail, { data, isLoading, error }] = useSendPasswordResetEmailMutation();
