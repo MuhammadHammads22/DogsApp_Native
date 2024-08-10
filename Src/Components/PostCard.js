@@ -86,7 +86,7 @@ const PostCard = (post) => {
           <Text style={styles.description}>{post.postData.item.description}</Text>
         </View>
         {/* video section */}
-        <View style={styles.postImage}>
+        {/* <View style={styles.postImage}> */}
           {/* <FlatList
           data={carouselData}
           horizontal={true}
@@ -106,7 +106,7 @@ const PostCard = (post) => {
           />)
           }}
           /> */}
-        </View>
+        {/* </View> */}
       </View>
       {/* likes comment section */}
       <View style={{ flex: 1, flexDirection: "row", justifyContent: 'space-around', backgroundColor: '#D7D8E0' ,borderBottomLeftRadius:responsiveWidth(3),borderBottomRightRadius:responsiveWidth(3)}}>
